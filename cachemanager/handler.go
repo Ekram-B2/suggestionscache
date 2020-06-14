@@ -8,7 +8,7 @@ import (
 
 	l4g "github.com/alecthomas/log4go"
 
-	"github.com/Ekram-B2/suggestionsmanager/rankclient"
+	"github.com/Ekram-B2/rankmanager/rank/rankclient"
 )
 
 //HandleRequestForSuggestions is the handler meant to process the GET request made for cached suggestions
