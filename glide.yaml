@@ -1,0 +1,11 @@
+package: github.com/Ekram-B2/suggestionscache
+import:
+- package: github.com/Ekram-B2/rankmanager
+  subpackages:
+  - rank
+  - rank/rankclient
+- package: github.com/alecthomas/log4go
+- package: github.com/go-chi/chi
+  version: ^4.1.2
+- package: github.com/patrickmn/go-cache
+  version: ^2.1.0

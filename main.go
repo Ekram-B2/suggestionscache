@@ -21,8 +21,15 @@ func main() {
 	// 2. Define catch all endpoint to help determine how to recover from the error case
 	r.Get("/*", handleCatchAll)
 
+	var bindingPort string
+	if os.Getenv("SYSTEM_BUILD") == "1" {
+		// Hardcoded the port number in development mode
+		bindingPort = ":8082"
+	} else {
+		bindingPort = ":" + os.Getenv("PORT")
+	}
 	// 3. Start the web application process and bind the application to a port
-	http.ListenAndServe(":8082", r)
+	http.ListenAndServe(bindingPort, r)
 
 }
 
