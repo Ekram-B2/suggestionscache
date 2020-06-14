@@ -1,0 +1,17 @@
+<logging>
+	<filter enabled="true">
+	   <tag>file</tag>
+	   <type>file</type>
+	   <level>INFO</level>
+	   <property name="filename">/var/log/gvlcache.log</property>
+	   <property name="format">[%D %T] [%L] (%S) %M</property>
+	   <property name="rotate">true</property>
+	   <property name="maxsize">100M</property>
+	</filter>
+    <filter enabled="true">
+        <tag>stdout</tag>
+	    <level>INFO</level>
+	    <type>console</type>
+	    <property name="format">[%D %T] [%L] (%S) %M</property>
+   </filter>
+</logging>
