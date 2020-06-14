@@ -1,82 +1,26 @@
-version: 2.1
-parameters:
-  deploy:
-    type: boolean
-    default: false
-  image_tag:
-    description: |
-      The tag for the docker image in the repo
-    type: string
-    default: latest         
-workflows:
-  build:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - master
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
 jobs:
   build:
-    working_directory: ~/gvlcache
-    shell: /bin/bash
     docker:
-      - image: superbaddude/golang:1.12.13-alpine
-        user: alpine
+      # specify the version
+      - image: circleci/golang:1.9
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    #### TEMPLATE_NOTE: go expects specific checkout path representing url
+    #### expecting it in the form of
+    ####   /go/src/github.com/circleci/go-tool
+    ####   /go/src/bitbucket.org/circleci/go-tool
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     steps:
-      - run:
-          name: Setup all required environmental variables
-          command: |
-            echo 'export GOLANG_VERSION=1.13.7' >> $BASH_ENV
-            echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
-            echo 'export GOPATH=$HOME/.go_workspace' >> $BASH_ENV
-            echo 'export EZLOCAL=0' >> $BASH_ENV
-            echo 'export CGO_ENABLED=0' >> $BASH_ENV
-            echo 'export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH' >> $BASH_ENV
       - checkout
-      - restore_cache:
-          key: golang-code-k6-{{ arch }}-{{ checksum "godeps.txt" }}-{{ .Branch }}-1
-      - run:
-          name: Make go get compatible with private ezoic repos
-          command: git config --global url.git@github.com:.insteadOf https://github.com/
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Create the artifacts folder to store error logs
-          command: |
-            mkdir -p ~/artifacts/
-            rm -rf ~/artifacts/*
-      - run:
-          name: Install all dependencies - the latest ezoic, and the specific versions for external
-          command: |
-            if [ ! -d $HOME/utility ]; then git clone git@github.com:ezoic/utility.git $HOME/utility; fi
-            pushd $HOME/utility; git pull origin master; popd
-            $HOME/utility/bin/update_ezoic_dependencies.sh
-      - run:
-          name: Build executable
-          command: |
-            go build -o ./build/gvlcache .
-      - run:
-          name: Test
-          command: set -o pipefail && go test -short -failfast -p 4 -parallel 4 ./gvlcachesrc/... |& tee -a ~/artifacts/test.log
-      - store_artifacts:
-          path: ~/artifacts
-      - save_cache:
-          key: golang-code-k6-{{ arch }}-{{ checksum "godeps.txt" }}-{{ .Branch }}
-          paths:
-              - ~/.go_workspace
-              - ~/utility
-      - run:
-          name: build docker image
-          command: docker build -t gvlcache:gvlcache-latest .
-      - deploy:
-          name: Push application Docker image
-          command: |
-            set -e
-            login="$(aws --region=us-east-1 ecr get-login --no-include-email)"
-            ${login}
-            docker tag gvlcache:gvlcache-latest "${GVL_ENDPOINT}:${CIRCLE_SHA1}"
-            docker push "${GVL_ENDPOINT}:${CIRCLE_SHA1}"
-orbs:
-  aws-eks: circleci/aws-eks@0.2.3
-  kubernetes: circleci/kubernetes@0.4.0
+
+      # specify any bash command here prefixed with `run: `
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
