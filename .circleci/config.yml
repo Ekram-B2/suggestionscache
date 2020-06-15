@@ -1,0 +1,57 @@
+version: 2.1
+parameters:
+  deploy:
+    type: boolean
+    default: false
+  image_tag:
+    description: |
+      The tag for the docker image in the suggestions-manager service
+    type: string
+    default: latest         
+workflows:
+  build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
+jobs:
+  build:
+    working_directory: ~/suggestions-manager
+    shell: /bin/bash
+    docker:
+      - image: superbaddude/golang:1.12.13-alpine
+        user: root
+    steps:
+      - run:
+          name: Setup all required environmental variables
+          command: |
+            echo 'export GOROOT=/usr/local/go' >> $BASH_ENV
+            echo 'export GOPATH=$HOME' >> $BASH_ENV
+            echo 'export CGO_ENABLED=0' >> $BASH_ENV
+            echo 'export PATH=$GOPATH/go/bin:/usr/local/go/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: Install git as a client to the deployment server
+          command: |
+            apk update
+            apk add git
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            go get "github.com/go-chi/chi" 
+            go get "github.com/Ekram-B2/suggestionsmanager"
+            go get "github.com/Ekram-B2/suggestionscache"
+      - run:
+          name: Build application 
+          command: |
+            go build -o build/suggestionscache .
+      - run:
+          name: Run automated regression tests
+          command: set -o pipefail && go test -short -failfast -p 4 -parallel 4 ./... 
+      - run:
+          name: Deploy application
+          command: |
+            git push https://heroku:b97a1f6c-448b-4d30-8ac7-51ba7aae9ef0@git.heroku.com/shielded-refuge-18793.git
+  

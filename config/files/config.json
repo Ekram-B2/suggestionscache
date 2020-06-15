@@ -1,0 +1,6 @@
+{ 
+    "cachekeytype": "default",
+    "byteencodertype": "default",
+    "bytedecodertype": "default",
+    "cachetype": "ramcache"
+}
