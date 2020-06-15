@@ -28,7 +28,7 @@ func main() {
 	} else {
 		bindingPort = ":" + os.Getenv("PORT")
 	}
-	bindingPort = ":8082"
+
 	// 3. Start the web application process and bind the application to a port
 	http.ListenAndServe(bindingPort, r)
 
