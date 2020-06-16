@@ -14,7 +14,7 @@ type cacheManager interface {
 	// putInCache puts a key/value pairing into a cache store
 	putInCache(string, rankManager.Rank, byteEncoder) error
 	// getFromCache gets a rank from the cache if it exists in the cache, or an empty rank if no key/value pairing exists
-	getRankFromCache(string, string) (bool, rankManager.Rank, error)
+	getRankFromCache(string, byteDecoder) (bool, rankManager.Rank, error)
 	// getRankFromCache returns a byte stream from the cache
 	getBytesFromCache(string) (bool, []byte)
 }

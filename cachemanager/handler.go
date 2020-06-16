@@ -71,7 +71,8 @@ func HandleRequestForSuggestions(rw http.ResponseWriter, req *http.Request) {
 
 	// apply cache key to determine if there is a cache hit or miss
 
-	isCacheHit, returnedRank, err := cacheManager.getRankFromCache(cacheKey, loadedConfig.CacheKeyType)
+	isCacheHit, returnedRank, err := cacheManager.getRankFromCache(cacheKey, getByteDecoder(loadedConfig.CacheKeyType))
+
 	if err != nil {
 		// this case is different from a cache miss. this means that there was an error with interacting with a cache
 		l4g.Error("SYSTEM-ERROR: was unable to retreive rank from cache: %s", err.Error())
@@ -79,11 +80,18 @@ func HandleRequestForSuggestions(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// 6. Based on whether the value was in the cache or not, we can proceed along two different control flows
+	// 6. Based on whether there was a cache hit or miss, set the X-Cache header
+	if isCacheHit {
+		rw.Header().Set("X-Cache", "HIT")
+	} else {
+		rw.Header().Set("X-Cache", "MISS")
+	}
+	// 7. Based on whether the value was in the cache or not, we can proceed along two different control flows
 	// A) If we haven't found the entry in the cache, then we will have to go to the rank manager service to draw content, and then store that content.
 	// B) If we have found an entry in the cache, then we return that back to the suggestions manager
 
 	if !isCacheHit {
+		// Set the header to state that there was a miss
 		// There was a cache miss and thus, apply the upstream rank manager service to retreive a rank
 		returnedRank, err = rankclient.GetRank(searchTerm,
 			realTerm,

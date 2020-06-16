@@ -2,6 +2,8 @@ package cachemanager
 
 import (
 	"bytes"
+	"os"
+	"strconv"
 	"time"
 
 	l4g "github.com/alecthomas/log4go"
@@ -31,7 +33,20 @@ var (
 )
 
 func init() {
-	rmclient = rcache.New(5*time.Minute, 10*time.Minute)
+	expiryTime, err := strconv.Atoi(os.Getenv("EXPIRY_TIME"))
+	if err != nil {
+		l4g.Error("OPERATION-ERROR: unable to get integer from the expiry time env variable: %s", err.Error())
+		rmclient = rcache.New(5*time.Minute, 10*time.Minute)
+		return
+	}
+	cleanUpInterval, err := strconv.Atoi(os.Getenv("CLEAN_UP_INTERVAL"))
+	if err != nil {
+		l4g.Error("OPERATION-ERROR: unable to get intEGER from the clean up interval env variable: %s", err.Error())
+		rmclient = rcache.New(5*time.Minute, 10*time.Minute)
+		return
+	}
+	rmclient = rcache.New(time.Duration(expiryTime)*time.Minute, time.Duration(cleanUpInterval)*time.Minute)
+
 }
 
 func (rm ramCacheManager) getBytesFromCache(key string) (isCacheHit bool, valuestream []byte) {
@@ -46,7 +61,7 @@ func (rm ramCacheManager) getBytesFromCache(key string) (isCacheHit bool, values
 }
 
 // getFromCache is applied to return a value from the cache given a cache key
-func (rm ramCacheManager) getRankFromCache(key, byteDecoderType string) (isCacheHit bool, returnedRank rankManager.Rank, err error) {
+func (rm ramCacheManager) getRankFromCache(key string, byteDecoderType byteDecoder) (isCacheHit bool, returnedRank rankManager.Rank, err error) {
 
 	// 1. Check cache to see if value exists given the cache key
 	isCacheHit, valueStream := rm.getBytesFromCache(key)

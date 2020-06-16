@@ -7,3 +7,5 @@ export DEVELOPMENT_CONFIG_PATH=config/files/config.json
 export CONFIG_OPERATION_TYPE=default
 export PORT=8080
 export DEPLOYMENT_TYPE=1
+export EXPIRY_TIME=5
+export CLEAN_UP_INTERVAL=10

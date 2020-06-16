@@ -94,7 +94,7 @@ func Test_cachemanager_getRankFromCache(t *testing.T) {
 	tests := []struct {
 		name             string
 		key              string
-		decoderType      string
+		decoderType      byteDecoder
 		wantIsCacheHit   bool
 		wantReturnedRank rankManager.Rank
 		wantErr          bool
@@ -105,7 +105,7 @@ func Test_cachemanager_getRankFromCache(t *testing.T) {
 		{
 			name:             "isNotHit",
 			key:              "hello",
-			decoderType:      "default",
+			decoderType:      decodeRaw,
 			wantIsCacheHit:   false,
 			wantReturnedRank: rankManager.Rank{},
 			client:           testClientMiss{},
@@ -113,7 +113,7 @@ func Test_cachemanager_getRankFromCache(t *testing.T) {
 		{
 			name:             "isHit",
 			key:              "hello",
-			decoderType:      "default",
+			decoderType:      decodeRaw,
 			wantIsCacheHit:   true,
 			wantReturnedRank: rankManager.Rank{Name: "Toronto", Rank: 0.5},
 			client:           testClientHit{},

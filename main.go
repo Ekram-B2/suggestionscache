@@ -16,7 +16,7 @@ func main() {
 
 	r.Get("/", HandleRoot)
 
-	r.Get("/determineRank", cachemanager.HandleRequestForSuggestions)
+	r.Get("/rank", cachemanager.HandleRequestForSuggestions)
 
 	// 2. Define catch all endpoint to help determine how to recover from the error case
 	r.Get("/*", handleCatchAll)
@@ -30,6 +30,7 @@ func main() {
 	}
 
 	// 3. Start the web application process and bind the application to a port
+
 	http.ListenAndServe(bindingPort, r)
 
 }
